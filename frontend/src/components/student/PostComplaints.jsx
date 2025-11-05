@@ -80,8 +80,8 @@ const PostComplaint = () => {
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '2rem auto', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', padding: '2rem', borderRadius: '8px' }}>
-            <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Submit a Complaint</h2>
+        <div style={{ maxWidth: '500px', margin: '1rem auto', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', padding: '1.5rem', borderRadius: '8px' }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '1.5rem' }}>Submit a Complaint</h2>
 
             {error && <p style={{ color: 'red' }}>{error}</p>}
 

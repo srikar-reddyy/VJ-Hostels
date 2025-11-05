@@ -5,7 +5,7 @@ import Announcement from '../components/student/Announcement';
 import TodayAnnouncements from '../components/student/TodayAnnouncements';
 import AllAnnouncements from '../components/student/AllAnnouncements';
 import Community from '../components/student/Community';
-import Complaints from '../components/student/Complaints';
+import ComplaintsLoader from '../components/student/ComplaintsLoader';
 import PostComplaint from '../components/student/PostComplaints';
 import ComplaintsList from '../components/student/ComplaintsList';
 import OutpassPage from '../components/student/OutpassPage';
@@ -25,7 +25,7 @@ function StudentPage() {
         <Route path="announcements/today" element={<TodayAnnouncements />} />
         <Route path="announcements/all" element={<AllAnnouncements />} />
         <Route path="community" element={<Community />} />
-        <Route path="complaints" element={<Complaints />} />
+        <Route path="complaints" element={<ComplaintsLoader />} />
         <Route path="complaints/complaint" element={<PostComplaint />} />
         <Route path="complaints/complaint-list" element={<ComplaintsList />} />
         <Route path="outpass" element={<OutpassPage />} />

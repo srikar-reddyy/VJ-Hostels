@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react'
 import useCurrentUser from '../../hooks/student/useCurrentUser'
 import { Home, Bell, Users, MessageSquare, LogOut, User, Utensils, UserCheck, Menu, X, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
 import '../../styles/student/custom.css';
 
 function Navbar({ onNavigate, isDesktop = false, isInSidebar = false }) {
-    const { user, loading } = useCurrentUser();
+    const { user, loading, clearUser } = useCurrentUser();
+    const { logout } = useAuthStore();
     const location = useLocation();
     const [isMobile, setIsMobile] = useState(false)
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth <= 768)
@@ -22,10 +26,24 @@ function Navbar({ onNavigate, isDesktop = false, isInSidebar = false }) {
         }
     };
 
+    const handleLogout = () => {
+        // Clear state immediately
+        clearUser()
+        localStorage.removeItem('token')
+        localStorage.removeItem('auth-token')
+        localStorage.removeItem('guard_token')
+        
+        // Redirect immediately
+        window.location.href = '/login'
+        
+        // Call logout API in background (non-blocking)
+        logout().catch(() => {})
+    };
+        
     if (isDesktop) {
         // Desktop horizontal navbar
         return (
-            <div className="desktop-navbar" style={{ backgroundColor: '#800020' }}>
+            <div className="desktop-navbar" style={{ backgroundColor: '#4F46E5' }}>
                 <nav className="desktop-nav-container">
                     <NavItem
                         icon={<Home size={18} />}
@@ -90,19 +108,20 @@ function Navbar({ onNavigate, isDesktop = false, isInSidebar = false }) {
 
     // Mobile behaviour
     if (!isDesktop) {
-        // If Navbar is already rendered inside a sidebar (from layout), show the full vertical items
         if (isInSidebar) {
             return (
                 <div style={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    backgroundColor: 'transparent'
+                    backgroundColor: 'transparent',
+                    width: '100%'
                 }}>
                     <nav style={{
-                        flex: 1,
-                        padding: '0.5rem 0',
-                        overflowY: 'auto'
+                        padding: '0.75rem 0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem'
                     }}>
                         <SidebarNavItem label="Home" to="" isActive={location.pathname === '/home' || location.pathname === '/home/'} onClick={handleNavClick} />
                         <SidebarNavItem label="Announcements" to="announcements" isActive={location.pathname.includes('/home/announcements')} onClick={handleNavClick} />
@@ -115,39 +134,67 @@ function Navbar({ onNavigate, isDesktop = false, isInSidebar = false }) {
 
                     <div style={{
                         padding: '1rem',
-                        borderTop: '1px solid rgba(255, 255, 255, 0.2)',
-                        backgroundColor: '#800020'
+                        marginTop: '12.5rem',
+                        borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+                        backgroundColor: '#3730A3',
+                        borderRadius: '12px',
+                        margin: '1rem 0.75rem 0 0.75rem'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            {user && (
-                                <>
-                                    {user.profilePhoto ? (
-                                        <img src={user.profilePhoto} alt="Profile" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255, 255, 255, 0.3)' }} />
-                                    ) : (
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.125rem' }}>
-                                            <span>{user.name ? user.name.charAt(0).toUpperCase() : 'S'}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                {user && (
+                                    <>
+                                        {user.profilePhoto ? (
+                                            <img src={user.profilePhoto} alt="Profile" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255, 255, 255, 0.3)' }} />
+                                        ) : (
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '1.125rem' }}>
+                                                <span>{user.name ? user.name.charAt(0).toUpperCase() : 'S'}</span>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <p style={{ margin: 0, color: 'white', fontWeight: '600', fontSize: '0.875rem' }}>{user.name || 'Student'}</p>
+                                            <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>ID: {user.rollNumber || 'N/A'}</p>
                                         </div>
-                                    )}
-                                    <div>
-                                        <p style={{ margin: 0, color: 'white', fontWeight: '600', fontSize: '0.875rem' }}>{user.name || 'Student'}</p>
-                                        <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>ID: {user.rollNumber || 'N/A'}</p>
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                )}
+                            </div>
+                            <button
+                                aria-label="Logout"
+                                title="Logout"
+                                onClick={handleLogout}
+                                style={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: '36px',
+                                    height: '36px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)'
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
+                                }}
+                            >
+                                <LogOut size={16} />
+                            </button>
                         </div>
                     </div>
                 </div>
             )
         }
-
-        // If Navbar is not inside the sidebar, rely on the layout-level hamburger
-        // StudentLayout already renders a hamburger and sidebar; returning null here avoids duplicate drawers.
         return null;
     }
 }
 
 const NavItem = ({ icon, label, to, isActive, onClick, isDesktop = false }) => {
-    const maroon = '#800020'; // 🔴 Maroon color constant
+    const blue = '#1E3A8A'; // deep indigo blue
 
     if (isDesktop) {
         return (
@@ -157,6 +204,9 @@ const NavItem = ({ icon, label, to, isActive, onClick, isDesktop = false }) => {
                 onClick={onClick}
                 title={label}
                 aria-current={isActive ? 'page' : undefined}
+                style={{
+                    color: isActive ? '#3B82F6' : '#E0E7FF'
+                }}
             >
                 <div className="icon-container">{icon}</div>
                 <span className="fw-medium">{label}</span>
@@ -164,19 +214,18 @@ const NavItem = ({ icon, label, to, isActive, onClick, isDesktop = false }) => {
         );
     }
 
-    // For mobile/vertical items use safer event handlers (currentTarget) so child elements don't break styling
     return (
         <Link
             to={to}
             onClick={onClick}
             className={`nav-item mobile-nav-item ${isActive ? 'mobile-active' : ''}`}
             style={{
-                color: isActive ? maroon : 'white'
+                color: isActive ? '#3B82F6' : 'white'
             }}
             onMouseEnter={(e) => {
                 const el = e.currentTarget;
                 if (!isActive) {
-                    el.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
+                    el.style.backgroundColor = 'rgba(59, 130, 246, 0.06)';
                     el.style.paddingLeft = '1.5rem';
                 }
             }}
@@ -207,9 +256,39 @@ const SidebarNavItem = ({ label, to, isActive, onClick }) => {
             onClick={onClick}
             className={`sidebar-large-item ${isActive ? 'active' : ''}`}
             aria-current={isActive ? 'page' : undefined}
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '1rem 1.25rem',
+                color: isActive ? '#60A5FA' : 'white',
+                textDecoration: 'none',
+                fontSize: '0.95rem',
+                fontWeight: isActive ? '600' : '500',
+                backgroundColor: isActive ? 'rgba(96, 165, 250, 0.15)' : 'transparent',
+                borderRadius: '12px',
+                margin: '0 0.75rem',
+                transition: 'all 0.2s ease',
+                cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+                if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.paddingLeft = '1.5rem'
+                }
+            }}
+            onMouseLeave={(e) => {
+                if (!isActive) {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.paddingLeft = '1.25rem'
+                }
+            }}
         >
             <span className="sidebar-label">{label}</span>
-            <ChevronRight size={18} className="sidebar-arrow" />
+            <ChevronRight size={18} className="sidebar-arrow" style={{ 
+                opacity: isActive ? 1 : 0.6,
+                transition: 'all 0.2s ease'
+            }} />
         </Link>
     );
 };

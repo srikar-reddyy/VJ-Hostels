@@ -93,16 +93,16 @@ const getStatusStyle = (status) => {
 
 const styles = {
     container: {
-        maxWidth: '1000px',
-        margin: '2rem auto',
+        maxWidth: '800px',
+        margin: '1rem auto',
         padding: '1rem',
         background: '#FFF',
     },
     title: {
         textAlign: 'center',
-        marginBottom: '2rem',
+        marginBottom: '1.5rem',
         color: '#333',
-        fontSize: '2rem',
+        fontSize: '1.5rem',
         fontWeight: 'bold',
     },
     complaintsList: {
@@ -153,8 +153,8 @@ const styles = {
         marginTop: '1rem',
     },
     complaintImage: {
-        width: '150px',
-        height: '150px',
+        width: '100px',
+        height: '100px',
         objectFit: 'cover',
         borderRadius: '4px',
         cursor: 'pointer',

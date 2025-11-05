@@ -33,7 +33,7 @@ const Complaints = () => {
     return (
         <div style={{ padding: '2rem' }}>
             <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <Megaphone size={32} style={{ marginRight: '10px' }} /> Announcements
+                <Megaphone size={32} style={{ marginRight: '10px' }} /> Complaints
             </h2>
 
             {/* Tab Headers */}
