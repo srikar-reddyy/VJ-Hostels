@@ -237,8 +237,8 @@ const FoodScheduleViewer = () => {
     const todayStr = `${todayYear}-${todayMonth}-${todayDay}`;
 
     return (
-        <div className="weekly-schedule-root" style={{ backgroundColor: '#f8fafc', minHeight: '100vh', padding: '2rem' }}>
-            <div className="container-fluid" style={{ maxWidth: '1400px' }}>
+        <div className="weekly-schedule-root" style={{ backgroundColor: '#f8fafc', minHeight: '100vh', padding: window.innerWidth <= 768 ? '0.5rem' : '2rem' }}>
+            <div className="container-fluid" style={{ maxWidth: window.innerWidth <= 768 ? '100%' : '1400px', padding: window.innerWidth <= 768 ? '0' : 'inherit' }}>
                 {/* Header */}
                 <div className="mb-4">
                     <h1 className="fw-bold mb-2" style={{ fontSize: '2rem', color: '#0f172a' }}>
@@ -339,10 +339,11 @@ const FoodScheduleViewer = () => {
                     <div className="col-12 col-lg-10">
                         <div className="weekly-panel" style={{ 
                             backgroundColor: '#ffffff', 
-                            borderRadius: '16px', 
-                            padding: '2rem',
+                            borderRadius: window.innerWidth <= 768 ? '12px' : '16px', 
+                            padding: window.innerWidth <= 768 ? '1rem' : '2rem',
                             border: '1px solid #e2e8f0',
-                            minHeight: '520px'
+                            minHeight: window.innerWidth <= 768 ? '750px' : '520px',
+                            margin: '0'
                         }}>
                             <div className="d-flex align-items-center justify-content-between mb-4 pb-3" style={{ borderBottom: '2px solid #e2e8f0' }}>
                                 <div>
@@ -366,19 +367,19 @@ const FoodScheduleViewer = () => {
                             </div>
 
                             {meals.length > 0 ? (
-                                <div className="row g-3">
+                                <div className="row g-2 g-md-3">
                                     {meals.map(meal => {
                                         const isMealPaused = mealStatus.pausedMeals.includes(meal);
                                         return (
-                                            <div key={meal} className="col-12 col-xl-6" style={{ position: 'relative' }}>
+                                            <div key={meal} className="col-6 col-lg-6" style={{ position: 'relative' }}>
                                                 <div
                                                     className="h-100 border"
                                                     style={{
                                                         backgroundColor: '#ffffff',
                                                         borderColor: '#e2e8f0',
                                                         borderWidth: '2px',
-                                                        borderRadius: '10px',
-                                                        padding: '1rem',
+                                                        borderRadius: '8px',
+                                                        padding: window.innerWidth <= 768 ? '0.75rem' : '1rem',
                                                         transition: 'all 0.2s ease',
                                                         cursor: 'default',
                                                         borderLeftWidth: '4px',
@@ -393,14 +394,14 @@ const FoodScheduleViewer = () => {
                                                         e.currentTarget.style.transform = 'translateY(0)';
                                                     }}
                                                 >
-                                                    <div className="d-flex align-items-start justify-content-between mb-3">
-                                                        <div className="d-flex align-items-center gap-3">
+                                                    <div className="d-flex align-items-start justify-content-between mb-2 mb-md-3">
+                                                        <div className="d-flex align-items-center" style={{ gap: window.innerWidth <= 768 ? '0.5rem' : '0.75rem' }}>
                                                             <div style={{
-                                                                fontSize: '1.5rem',
+                                                                fontSize: window.innerWidth <= 768 ? '1.2rem' : '1.5rem',
                                                                 backgroundColor: '#f1f5f9',
-                                                                borderRadius: '10px',
-                                                                width: '48px',
-                                                                height: '48px',
+                                                                borderRadius: '8px',
+                                                                width: window.innerWidth <= 768 ? '36px' : '48px',
+                                                                height: window.innerWidth <= 768 ? '36px' : '48px',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center'
@@ -409,12 +410,13 @@ const FoodScheduleViewer = () => {
                                                             </div>
                                                             <div>
                                                                 <h5 className="mb-1 fw-bold text-capitalize" style={{
-                                                                    fontSize: '1.1rem',
-                                                                    color: getMealColor(meal)
+                                                                    fontSize: window.innerWidth <= 768 ? '1.1rem' : '1.1rem',
+                                                                    color: getMealColor(meal),
+                                                                    lineHeight: '1.2'
                                                                 }}>
                                                                     {meal}
                                                                 </h5>
-                                                                <div style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                                                                <div style={{ color: '#64748b', fontSize: window.innerWidth <= 768 ? '0.8rem' : '0.85rem' }}>
                                                                     {getMealTime(meal)}
                                                                 </div>
                                                             </div>
@@ -424,12 +426,12 @@ const FoodScheduleViewer = () => {
                                                     <div
                                                         style={{
                                                             backgroundColor: '#f8fafc',
-                                                            borderRadius: '8px',
-                                                            padding: '0.9rem',
-                                                            fontSize: '0.93rem',
-                                                            lineHeight: '1.6',
+                                                            borderRadius: '6px',
+                                                            padding: window.innerWidth <= 768 ? '0.8rem' : '0.9rem',
+                                                            fontSize: window.innerWidth <= 768 ? '0.85rem' : '0.93rem',
+                                                            lineHeight: '1.5',
                                                             color: '#334155',
-                                                            minHeight: '70px',
+                                                            minHeight: window.innerWidth <= 768 ? '60px' : '70px',
                                                             border: '1px solid #e2e8f0'
                                                         }}
                                                     >
@@ -441,17 +443,17 @@ const FoodScheduleViewer = () => {
                                                 {isMealPaused && (
                                                     <span style={{
                                                         position: 'absolute',
-                                                        right: '20px',
-                                                        top: '10px',
+                                                        right: window.innerWidth <= 768 ? '8px' : '20px',
+                                                        top: window.innerWidth <= 768 ? '8px' : '10px',
                                                         display: 'inline-flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
                                                         color: '#fff',
                                                         backgroundColor: '#dc2626',
-                                                        width: '28px',
-                                                        height: '28px',
+                                                        width: window.innerWidth <= 768 ? '20px' : '28px',
+                                                        height: window.innerWidth <= 768 ? '20px' : '28px',
                                                         borderRadius: '50%',
-                                                        fontSize: '1.2rem',
+                                                        fontSize: window.innerWidth <= 768 ? '0.9rem' : '1.2rem',
                                                         fontWeight: 700,
                                                         lineHeight: 1,
                                                         boxShadow: '0 2px 8px rgba(220, 38, 38, 0.3)'

@@ -547,186 +547,105 @@ if (showChef) {
                 </div>
             </div>
 
-            {/* --- Today's Menu Tab (Restored) --- */}
-            {/* --- Today's Menu Tab (Restored) --- */}
-{activeTab === 'menu' && (
-    <div className="menu-card">
-        {menuLoading ? (
-            <div className="text-center my-4">
-                <div className="spinner-border text-primary" role="status"></div>
-                <p className="mt-2">Loading today's menu...</p>
-            </div>
-        ) : menu ? (
-            <>
-                <h3 style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', marginBottom: '1rem' }}>
-                    Today's Menu - {formatDate(menu.date)}
-                </h3>
-                <div 
-                    className="row"
-                    style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '8px',
-                        margin: '0 -4px'
-                    }}
-                >
-                    {['breakfast','lunch','snacks','dinner'].map(meal => {
-                        if(!menu[meal]) return null;
-                        const status = getMealStatus(meal);
-                        const isNextMeal = meal===getNextMeal() && status.status!=='Ended';
-                        
-                        const badgeClass = badgeColorMap[status.color] || 'bg-secondary';
-                        
-                        return (
-                            <div key={meal} 
+            {/* --- Today's Menu Tab --- */}
+            {activeTab === 'menu' && (
+                <div className="menu-card">
+                    {menuLoading ? (
+                        <div className="text-center my-4">
+                            <div className="spinner-border text-primary" role="status"></div>
+                            <p className="mt-2">Loading today's menu...</p>
+                        </div>
+                    ) : menu ? (
+                        <>
+                            <h3 style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', marginBottom: '1rem' }}>
+                                Today's Menu - {formatDate(menu.date)}
+                            </h3>
+                            <div 
+                                className="row"
                                 style={{
-                                    flex: '1 1 calc(50% - 8px)',
                                     display: 'flex',
-                                    marginBottom: '8px',
-                                    minWidth: '160px'
+                                    flexWrap: 'wrap',
+                                    gap: window.innerWidth <= 768 ? '4px' : '8px',
+                                    margin: window.innerWidth <= 768 ? '0 -2px' : '0 -4px'
                                 }}
                             >
-                                <div 
-                                    className={`meal-item-card`}
-                                    style={{
-                                        border: '1px solid whitesmoke',
-                                        boxShadow: '0 1px 6px rgba(0,0,0,0.3)', 
-                                        padding: 'clamp(0.6rem, 2vw, 1rem)',
-                                        borderRadius: '8px',
-                                        display: 'flex', 
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between',
-                                        width: '100%',
-                                        background: '#fff'
-                                    }}
-                                >
-                                    <div className="card-body p-0 d-flex flex-column justify-content-between h-100">
-                                        <div>
-                                            <div className="meal-title" style={{ 
-                                                display:'flex', 
-                                                alignItems:'center', 
-                                                gap:'0.4rem', 
-                                                marginBottom:'0.4rem',
-                                                flexWrap: 'wrap'
-                                            }}>
-                                                <span className="meal-icon" style={{fontSize:'clamp(1rem, 3vw, 1.2rem)'}}>{getMealIcon(meal)}</span>
-                                                <BlinkingLight color={status.color} />
-                                                <h6 className="mb-0 text-capitalize" style={{ fontSize: 'clamp(0.9rem, 3vw, 1rem)' }}>
-                                                    {meal}
-                                                </h6>
-                                                <small className={`badge ${badgeClass}`} style={{ 
-                                                    marginLeft:'auto',
-                                                    fontSize: 'clamp(0.65rem, 2vw, 0.75rem)',
-                                                    padding: '0.25rem 0.5rem'
-                                                }}>
-                                                    {status.status}
-                                                </small>
-                                            </div>
-                                            
-                                            <p className="meal-content mb-1" style={{ 
-                                                paddingLeft:'1.2rem',
-                                                fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)',
-                                                lineHeight: '1.3',
-                                                marginBottom: '0.5rem'
-                                            }}>
-                                                {menu[meal]}
-                                            </p>
-                                        </div>
-                                        
-                                        {/* Show aggregate rating or user's previous feedback */}
-                                        <div style={{ marginTop: '0.5rem' }}>
-                                            {userFeedbackDetails[meal] ? (
-                                                // Show user's previous feedback
-                                                <div style={{ 
-                                                    backgroundColor: '#e8f4f8', 
-                                                    padding: 'clamp(0.5rem, 2vw, 0.8rem)', 
-                                                    borderRadius: '6px', 
-                                                    borderLeft: '3px solid #4364f7' 
-                                                }}>
-                                                    <div style={{ marginBottom: '0.3rem' }}>
-                                                        <strong style={{ 
-                                                            color: '#4364f7',
-                                                            fontSize: 'clamp(0.75rem, 2.5vw, 0.85rem)'
+                                {['breakfast','lunch','snacks','dinner'].map(meal => {
+                                    if(!menu[meal]) return null;
+                                    const status = getMealStatus(meal);
+                                    const isNextMeal = meal===getNextMeal() && status.status!=='Ended';
+                                    
+                                    const badgeClass = badgeColorMap[status.color] || 'bg-secondary';
+                                    
+                                    return (
+                                        <div key={meal} 
+                                            style={{
+                                                flex: window.innerWidth <= 768 ? '1 1 100%' : '1 1 calc(50% - 8px)',
+                                                display: 'flex',
+                                                marginBottom: window.innerWidth <= 768 ? '8px' : '8px',
+                                                minWidth: window.innerWidth <= 768 ? '100%' : '160px'
+                                            }}
+                                        >
+                                            <div 
+                                                className={`meal-item-card`}
+                                                style={{
+                                                    border: '1px solid whitesmoke',
+                                                    boxShadow: '0 1px 6px rgba(0,0,0,0.3)', 
+                                                    padding: 'clamp(0.6rem, 2vw, 1rem)',
+                                                    borderRadius: '8px',
+                                                    display: 'flex', 
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'space-between',
+                                                    width: '100%',
+                                                    background: '#fff'
+                                                }}
+                                            >
+                                                <div className="card-body p-0 d-flex flex-column justify-content-between h-100">
+                                                    <div>
+                                                        <div className="meal-title" style={{ 
+                                                            display:'flex', 
+                                                            alignItems:'center', 
+                                                            gap:'0.4rem', 
+                                                            marginBottom:'0.4rem',
+                                                            flexWrap: 'wrap'
                                                         }}>
-                                                            Your Rating:
-                                                        </strong>
-                                                        <div style={{ display: 'flex', gap: '0.15rem', marginTop: '0.2rem', alignItems: 'center' }}>
-                                                            {[1,2,3,4,5].map(s => (
-                                                                <span key={s} style={{ 
-                                                                    color: s <= userFeedbackDetails[meal].rating ? '#ffb020' : '#e6e6e6', 
-                                                                    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)' 
-                                                                }}>{'★'}</span>
-                                                            ))}
-                                                            <span style={{ 
-                                                                marginLeft: '0.3rem', 
-                                                                fontSize: 'clamp(0.7rem, 2vw, 0.85rem)', 
-                                                                color: '#555', 
-                                                                fontWeight: 600 
+                                                            <span className="meal-icon" style={{fontSize:'clamp(1rem, 3vw, 1.2rem)'}}>{getMealIcon(meal)}</span>
+                                                            <BlinkingLight color={status.color} />
+                                                            <h6 className="mb-0 text-capitalize" style={{ 
+                                                                fontSize: 'clamp(0.9rem, 3vw, 1rem)',
+                                                                fontWeight: window.innerWidth <= 768 ? '800' : '600'
                                                             }}>
-                                                                {userFeedbackDetails[meal].rating}/5
-                                                            </span>
+                                                                {meal}
+                                                            </h6>
+                                                            <small className={`badge ${badgeClass}`} style={{ 
+                                                                marginLeft:'auto',
+                                                                fontSize: 'clamp(0.65rem, 2vw, 0.75rem)',
+                                                                padding: '0.25rem 0.5rem'
+                                                            }}>
+                                                                {status.status}
+                                                            </small>
                                                         </div>
+                                                        
+                                                        <p className="meal-content mb-1" style={{ 
+                                                            paddingLeft:'1.2rem',
+                                                            fontSize: 'clamp(0.8rem, 2.5vw, 0.9rem)',
+                                                            lineHeight: '1.3',
+                                                            marginBottom: '0.5rem'
+                                                        }}>
+                                                            {menu[meal]}
+                                                        </p>
                                                     </div>
-                                                    {userFeedbackDetails[meal].feedback && (
-                                                        <div style={{ 
-                                                            marginTop: '0.4rem', 
-                                                            fontSize: 'clamp(0.7rem, 2vw, 0.8rem)', 
-                                                            color: '#333', 
-                                                            fontStyle: 'italic' 
-                                                        }}>
-                                                            <strong>Your Review:</strong>
-                                                            <p style={{ 
-                                                                margin: '0.2rem 0 0 0', 
-                                                                color: '#555',
-                                                                wordBreak: 'break-word'
-                                                            }}>
-                                                                "{userFeedbackDetails[meal].feedback}"
-                                                            </p>
-                                                        </div>
-                                                    )}
                                                 </div>
-                                            ) : (
-                                                // Show aggregate rating
-                                                (() => {
-                                                    const agg = getAggregateRating(meal);
-                                                    if (!agg || agg.avg == null) {
-                                                        return <small className="text-muted" style={{ fontSize: 'clamp(0.7rem, 2vw, 0.85rem)' }}>
-                                                            No ratings yet
-                                                        </small>;
-                                                    }
-                                                    const rounded = Math.round(agg.avg);
-                                                    return (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                                            <div style={{ display: 'flex', gap: '0.1rem' }} aria-hidden>
-                                                                {[1,2,3,4,5].map(s => (
-                                                                    <span key={s} style={{ 
-                                                                        color: s <= rounded ? '#ffb020' : '#e6e6e6', 
-                                                                        fontSize: 'clamp(0.8rem, 2.5vw, 1rem)' 
-                                                                    }}>{'★'}</span>
-                                                                ))}
-                                                            </div>
-                                                            <div style={{ 
-                                                                fontSize: 'clamp(0.75rem, 2.5vw, 0.9rem)', 
-                                                                color: '#334155', 
-                                                                fontWeight: 600 
-                                                            }}>
-                                                                {agg.avg.toFixed(1)}{agg.count ? ` (${agg.count})` : ''}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()
-                                            )}
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    )
+                                })}
                             </div>
-                        )
-                    })}
+                        </>
+                    ) : <div className="alert alert-warning">No menu available today.</div>}
                 </div>
-            </>
-        ) : <div className="alert alert-warning">No menu available today.</div>}
-    </div>
-)}
+            )}
+
+
 
             {/* --- Feedback Form Tab (DEFINITIVE ALIGNMENT FIX) --- */}
             {activeTab === 'feedback' && (
