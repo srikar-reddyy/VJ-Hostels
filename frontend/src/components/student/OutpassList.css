@@ -1,0 +1,298 @@
+/* Container Styles */
+.outpass-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+/* Header Styles */
+.outpass-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.outpass-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.outpass-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Card Grid */
+.outpass-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* Card Styles */
+.outpass-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.outpass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.06);
+}
+
+.outpass-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.outpass-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+}
+
+/* Badge Styles */
+.outpass-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
+    text-transform: capitalize;
+}
+
+.outpass-badge-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+    border-color: #fbbf24;
+}
+
+.outpass-badge-approved {
+    background-color: #d1fae5;
+    color: #065f46;
+    border-color: #10b981;
+}
+
+.outpass-badge-rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #ef4444;
+}
+
+.outpass-badge-out {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border-color: #3b82f6;
+}
+
+.outpass-badge-returned {
+    background-color: #e9d5ff;
+    color: #6b21a8;
+    border-color: #a855f7;
+}
+
+/* Card Body */
+.outpass-card-body {
+    padding: 1.5rem;
+}
+
+.outpass-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.outpass-info-row:last-child {
+    margin-bottom: 0;
+}
+
+.outpass-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.outpass-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.outpass-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.outpass-value {
+    font-size: 0.938rem;
+    font-weight: 500;
+    color: #111827;
+    word-break: break-word;
+}
+
+.outpass-divider {
+    height: 1px;
+    background-color: #e5e7eb;
+    margin: 1rem 0;
+}
+
+/* Center Container (for loading, error, empty states) */
+.outpass-center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 2rem;
+}
+
+/* Error State */
+.outpass-error-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid #fecaca;
+    max-width: 400px;
+}
+
+.outpass-error-text {
+    color: #991b1b;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Warning State */
+.outpass-warning-card {
+    background-color: #fffbeb;
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #fde68a;
+    max-width: 400px;
+}
+
+.outpass-warning-text {
+    color: #92400e;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Empty State */
+.outpass-empty-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+    max-width: 400px;
+}
+
+.outpass-empty-text {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Loading State */
+.outpass-loader {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: outpass-spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.outpass-loading-text {
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+@keyframes outpass-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .outpass-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .outpass-title {
+        font-size: 1.5rem;
+    }
+
+    .outpass-subtitle {
+        font-size: 0.875rem;
+    }
+
+    .outpass-card-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .outpass-card-header {
+        padding: 1rem;
+    }
+
+    .outpass-card-body {
+        padding: 1rem;
+    }
+
+    .outpass-card-title {
+        font-size: 1rem;
+    }
+
+    .outpass-badge {
+        font-size: 0.688rem;
+        padding: 0.25rem 0.625rem;
+    }
+
+    .outpass-icon-wrapper {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 480px) {
+    .outpass-container {
+        padding: 1rem 0.75rem;
+    }
+
+    .outpass-title {
+        font-size: 1.25rem;
+    }
+
+    .outpass-info-row {
+        gap: 0.5rem;
+    }
+
+    .outpass-icon-wrapper {
+        width: 32px;
+        height: 32px;
+    }
+}
