@@ -381,9 +381,12 @@ adminApp.get('/all-announcements', verifyAdmin, expressAsyncHandler(async (req, 
                 } catch (e) {
                     obj.imageUrl = null;
                 }
-                // Optionally remove raw binary to reduce payload
+                // Remove raw binary to reduce payload
                 delete obj.image;
             }
+            // Add seenCount and avoid returning raw seen array to reduce payload
+            obj.seenCount = Array.isArray(obj.seen) ? obj.seen.length : 0;
+            delete obj.seen;
             return obj;
         });
         res.status(200).json(mapped);
@@ -411,6 +414,8 @@ adminApp.get('/announcements', verifyAdmin, expressAsyncHandler(async (req, res)
                 }
                 delete obj.image;
             }
+            obj.seenCount = Array.isArray(obj.seen) ? obj.seen.length : 0;
+            delete obj.seen;
             return obj;
         });
 

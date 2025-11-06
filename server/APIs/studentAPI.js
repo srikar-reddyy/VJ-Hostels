@@ -164,6 +164,45 @@ studentApp.get('/announcements',expressAsyncHandler(async (req, res) => {
     }
 }))
 
+// mark a single announcement as seen by the authenticated student
+studentApp.put('/announcement/:id/seen', verifyStudent, expressAsyncHandler(async (req, res) => {
+    try {
+        const { id } = req.params;
+        const announcement = await Announcement.findByIdAndUpdate(
+            id,
+            { $addToSet: { seen: req.studentId } },
+            { new: true }
+        );
+
+        if (!announcement) return res.status(404).json({ message: 'Announcement not found' });
+
+        return res.status(200).json({ success: true, seenCount: announcement.seen?.length || 0 });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
+
+// mark multiple announcements as seen (expects { ids: [id1, id2, ...] })
+studentApp.put('/announcements/mark-seen', verifyStudent, expressAsyncHandler(async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'ids array is required' });
+        }
+
+        await Announcement.updateMany(
+            { _id: { $in: ids } },
+            { $addToSet: { seen: req.studentId } }
+        );
+
+        const updated = await Announcement.find({ _id: { $in: ids } }).select('_id seen');
+        const counts = updated.map(a => ({ id: a._id, seenCount: a.seen.length }));
+        res.status(200).json({ success: true, counts });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
+
 // to post a general complaint
 studentApp.post('/post-complaint', uploadComplaintImage, expressAsyncHandler(async (req, res) => {
     try {

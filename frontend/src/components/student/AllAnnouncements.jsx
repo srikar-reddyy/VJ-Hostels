@@ -48,6 +48,12 @@ const AllAnnouncements = () => {
         setExpandedAnnouncements(newExpanded);
     };
 
+    // Decode stored "\\n" sequences back to real newlines for display
+    const decodeNewlinesForDisplay = (s) => {
+        if (typeof s !== 'string') return s ?? '';
+        return s.replace(/\\n/g, '\n');
+    };
+
     // Date helpers
     const isSameDay = (d1, d2) => {
         return d1.getFullYear() === d2.getFullYear() &&
@@ -86,7 +92,8 @@ const AllAnnouncements = () => {
             {Array.isArray(allAnnouncements) && allAnnouncements.length > 0 ? (
                 allAnnouncements.map((announcement) => {
                     const isExpanded = expandedAnnouncements.has(announcement._id);
-                    const needsTruncation = shouldTruncate(announcement.description);
+                    const decoded = decodeNewlinesForDisplay(announcement.description);
+                    const needsTruncation = shouldTruncate(decoded);
                     
                     return (
                         <div key={announcement._id} className="announcement-card">
@@ -101,20 +108,47 @@ const AllAnnouncements = () => {
                                     </div>
                                 )}
                                 <h5 className="announcement-card-title">{announcement.title}</h5>
-                                <p className="announcement-card-text">
-                                    {isExpanded || !needsTruncation 
-                                        ? announcement.description 
-                                        : truncateText(announcement.description)
-                                    }
+                                <p className="announcement-card-text" style={{ whiteSpace: 'pre-wrap', margin: 0 }}>
+                                        {isExpanded || !needsTruncation ? (
+                                            <>
+                                                {decoded}
+                                                {needsTruncation && (
+                                                    <> {' '}
+                                                        <button
+                                                            className="read-more-btn"
+                                                            onClick={() => handleReadMore(announcement._id)}
+                                                            style={{
+                                                                background: 'transparent',
+                                                                border: 'none',
+                                                                color: '#1a73e8',
+                                                                padding: 0,
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            {isExpanded ? 'Read Less' : 'Read More'}
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                {truncateText(decoded)}{' '}
+                                                <button
+                                                    className="read-more-btn"
+                                                    onClick={() => handleReadMore(announcement._id)}
+                                                    style={{
+                                                        background: 'transparent',
+                                                        border: 'none',
+                                                        color: '#1a73e8',
+                                                        padding: 0,
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    {isExpanded ? 'Read Less' : 'Read More'}
+                                                </button>
+                                            </>
+                                        )}
                                 </p>
-                                {needsTruncation && (
-                                    <button 
-                                        className="read-more-btn"
-                                        onClick={() => handleReadMore(announcement._id)}
-                                    >
-                                        {isExpanded ? 'Read Less' : 'Read More'}
-                                    </button>
-                                )}
                                 <small className="announcement-card-date">
                                     Posted : {formatDateDisplay(announcement.createdAt)}
                                 </small>

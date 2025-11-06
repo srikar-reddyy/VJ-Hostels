@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAdmin } from '../../context/AdminContext';
 
@@ -15,6 +15,8 @@ const Announcements = () => {
         description: ''
     });
     const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const prevObjectUrlRef = useRef(null);
 
     useEffect(() => {
         fetchAnnouncements();
@@ -97,7 +99,13 @@ const Announcements = () => {
             // Use FormData to support optional image upload
             const payload = new FormData();
             payload.append('title', formData.title);
-            payload.append('description', formData.description);
+            // Store actual newlines as the two-character sequence "\\n"
+            const encodeNewlinesForStorage = (s) => {
+                if (typeof s !== 'string') return s ?? '';
+                return s.replace(/\r\n|\r|\n/g, '\\n');
+            };
+
+            payload.append('description', encodeNewlinesForStorage(formData.description));
             if (imageFile) payload.append('image', imageFile);
 
             if (editingId) {
@@ -131,11 +139,26 @@ const Announcements = () => {
     };
 
     const handleEdit = (announcement) => {
+        // When loading an announcement into the textarea for editing,
+        // convert stored "\\n" sequences back into real newlines so the
+        // textarea shows multi-line text correctly.
+        const decodeNewlinesForEdit = (s) => {
+            if (typeof s !== 'string') return s ?? '';
+            return s.replace(/\\n/g, '\n');
+        };
+
         setFormData({
             title: announcement.title,
-            description: announcement.description
+            description: decodeNewlinesForEdit(announcement.description)
         });
+        // If announcement has an imageUrl (provided by admin API), show it in preview
         setImageFile(null);
+        // revoke previously created object URL if present
+        if (prevObjectUrlRef.current) {
+            try { URL.revokeObjectURL(prevObjectUrlRef.current); } catch (e) {}
+            prevObjectUrlRef.current = null;
+        }
+        setImagePreview(announcement.imageUrl || null);
         setEditingId(announcement._id);
         setShowForm(true);
         window.scrollTo(0, 0);
@@ -162,7 +185,22 @@ const Announcements = () => {
         setEditingId(null);
         setShowForm(false);
         setImageFile(null);
+        if (prevObjectUrlRef.current) {
+            try { URL.revokeObjectURL(prevObjectUrlRef.current); } catch (e) {}
+            prevObjectUrlRef.current = null;
+        }
+        setImagePreview(null);
     };
+
+    // cleanup object URL on unmount
+    useEffect(() => {
+        return () => {
+            if (prevObjectUrlRef.current) {
+                try { URL.revokeObjectURL(prevObjectUrlRef.current); } catch (e) {}
+                prevObjectUrlRef.current = null;
+            }
+        };
+    }, []);
 
     return (
         <div>
@@ -196,19 +234,22 @@ const Announcements = () => {
                         bottom: 0,
                         backgroundColor: 'rgba(0,0,0,0.5)',
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         justifyContent: 'center',
-                        zIndex: 1050
+                        paddingTop: '3vh',
+                        paddingBottom: '3vh',
+                        zIndex: 1050,
+                        overflowY: 'auto'
                     }}
                     onClick={() => resetForm()}
                 >
-                    <div style={{ width: '90%', maxWidth: 800 }} onClick={e => e.stopPropagation()}>
-                        <div className="card mb-4">
+                    <div style={{ width: '90%', maxWidth: 800, maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+                        <div className="card mb-4" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                             <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                                 <h5 className="mb-0">{editingId ? 'Edit Announcement' : 'Create New Announcement'}</h5>
                                 <button className="btn btn-sm btn-light" onClick={resetForm}>Close</button>
                             </div>
-                            <div className="card-body">
+                            <div className="card-body" style={{ overflowY: 'auto' }}>
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
                                         <label htmlFor="title" className="form-label">Title</label>
@@ -242,9 +283,52 @@ const Announcements = () => {
                                             accept="image/*"
                                             className="form-control"
                                             id="image"
-                                            onChange={(e) => setImageFile(e.target.files[0] || null)}
+                                            onChange={(e) => {
+                                                const f = e.target.files[0] || null;
+                                                setImageFile(f);
+                                                if (f) {
+                                                    try {
+                                                        // revoke previous object URL if any
+                                                        if (prevObjectUrlRef.current) {
+                                                            try { URL.revokeObjectURL(prevObjectUrlRef.current); } catch (e) {}
+                                                        }
+                                                        const url = URL.createObjectURL(f);
+                                                        prevObjectUrlRef.current = url;
+                                                        setImagePreview(url);
+                                                    } catch (e) {
+                                                        setImagePreview(null);
+                                                        prevObjectUrlRef.current = null;
+                                                    }
+                                                } else {
+                                                    if (prevObjectUrlRef.current) {
+                                                        try { URL.revokeObjectURL(prevObjectUrlRef.current); } catch (e) {}
+                                                        prevObjectUrlRef.current = null;
+                                                    }
+                                                    setImagePreview(null);
+                                                }
+                                            }}
                                         />
                                     </div>
+                                    {imagePreview && (
+                                        <div className="mb-3">
+                                            <label className="form-label">Current image preview</label>
+                                            <div>
+                                                <img
+                                                    src={imagePreview}
+                                                    alt="preview"
+                                                    style={{
+                                                        display: 'block',
+                                                        margin: '0 auto',
+                                                        maxWidth: '100%',
+                                                        width: 'auto',
+                                                        maxHeight: '60vh',
+                                                        objectFit: 'contain',
+                                                        borderRadius: 6
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="d-flex gap-2">
                                         <button type="submit" className="btn btn-primary">
                                             {editingId ? 'Update Announcement' : 'Post Announcement'}
@@ -283,8 +367,40 @@ const Announcements = () => {
                                         <h5 className="mb-1">{announcement.title}</h5>
                                         <small>{formatDateDisplay(announcement.createdAt)}</small>
                                     </div>
-                                    <p className="mb-1">{announcement.description}</p>
+                                    {announcement.imageUrl && (
+                                        <div style={{ marginBottom: '0.75rem' }}>
+                                            <img
+                                                src={announcement.imageUrl}
+                                                alt={announcement.title}
+                                                style={{
+                                                    width: '100%',
+                                                    maxHeight: 240,
+                                                    objectFit: 'contain',
+                                                    borderRadius: 8,
+                                                    backgroundColor: '#000'
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                    {/* Render description with preserved line breaks. The backend stores newlines as '\\n'. */}
+                                    <p className="mb-1" style={{ whiteSpace: 'pre-wrap' }}>
+                                        {(function getDecoded() {
+                                            if (typeof announcement.description !== 'string') return announcement.description ?? '';
+                                            return announcement.description.replace(/\\n/g, '\n');
+                                        })()}
+                                    </p>
                                     <div className="d-flex justify-content-end gap-2 mt-2">
+                                        <div className="d-flex align-items-center me-2">
+                                            <button
+                                                className="btn btn-sm btn-outline-secondary"
+                                                title={`${announcement.seenCount ?? (announcement.seen ? announcement.seen.length : 0)} users saw this announcement`}
+                                                style={{ cursor: 'default' }}
+                                                disabled
+                                            >
+                                                <span style={{ marginRight: 6 }}>👁</span>
+                                                {announcement.seenCount ?? (announcement.seen ? announcement.seen.length : 0)}
+                                            </button>
+                                        </div>
                                         {isToday(announcement.createdAt) && (
                                             <button
                                                 className="btn btn-sm btn-outline-primary"
