@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Megaphone } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,7 +9,9 @@ const AnnouncementBanner = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    return sessionStorage.getItem('announcementBannerDismissed') === 'true';
+  });
   const [slide, setSlide] = useState(false);
 
   useEffect(() => {
@@ -61,7 +63,10 @@ const AnnouncementBanner = () => {
     return text;
   };
 
-  const handleDismiss = () => setDismissed(true);
+  const handleDismiss = () => {
+    setDismissed(true);
+    sessionStorage.setItem('announcementBannerDismissed', 'true');
+  };
 
   if (loading || dismissed || announcements.length === 0) return null;
 
@@ -70,28 +75,22 @@ const AnnouncementBanner = () => {
   return (
     <div
       style={{
-        position: 'relative',
-        margin: '1rem auto',
-        padding: '0.85rem 1.25rem 1.4rem',
-        width: '100%',
-        maxWidth: '1400px',
-        minWidth: '300px',
-        height: 'auto',
-        background: '#8b0000', // Dark Red solid background
-        borderRadius: '14px',
-        overflow: 'hidden',
+        position: 'fixed',
+        top: '30%',
+        right: '2%',
+        padding: '0.75rem 1rem',
+        width: '320px',
+        background: 'white',
+        borderRadius: '16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        boxShadow: '0 6px 18px rgba(139,0,0,0.35)',
-        transition: 'all 0.9s ease',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+        transition: 'all 0.3s ease',
         cursor: 'pointer',
-        '@media (max-width: 768px)': {
-          padding: '0.75rem 1rem 1.2rem',
-        },
-        '@media (max-width: 480px)': {
-          padding: '0.65rem 0.85rem 1rem',
-        },
+        zIndex: 40,
+        border: '1px solid rgba(0,0,0,0.1)',
+        animation: 'slideInRight 0.6s ease-out',
       }}
       onClick={handleAnnouncementClick}
       className="announcement-banner"
@@ -108,28 +107,34 @@ const AnnouncementBanner = () => {
           transition: 'transform 0.45s ease, opacity 0.45s ease',
         }}
       >
-        {/* Text */}
-        <div style={{ flex: 1 }}>
-          <h6
-            className="mb-1 fw-semibold"
-            style={{
-              color: '#ffe0e0',
-              fontSize: '1rem',
-              textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-            }}
-          >
-            {truncateText(current.title, 35)}
-          </h6>
-          <p
-            className="mb-0 small"
-            style={{
-              color: 'rgba(255,224,224,0.85)',
-              lineHeight: 1.45,
-              fontSize: '0.9rem',
-            }}
-          >
-            {truncateText(current.description, 80)}
-          </p>
+        {/* Icon and text */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+          <Megaphone size={20} style={{ color: '#4F46E5', marginTop: '0.1rem', flexShrink: 0 }} />
+          <div>
+            <h6
+              className="mb-1 fw-semibold"
+              style={{
+                color: '#4F46E5',
+                fontSize: '1rem',
+                fontWeight: '600',
+                margin: '0 0 0.25rem 0',
+                textTransform: 'uppercase'
+              }}
+            >
+              {truncateText(current.title, 35)}
+            </h6>
+            <p
+              className="mb-0 small"
+              style={{
+                color: '#000000',
+                lineHeight: 1.45,
+                fontSize: '0.85rem',
+                margin: 0
+              }}
+            >
+              {truncateText(current.description, 80)}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -141,15 +146,26 @@ const AnnouncementBanner = () => {
         }}
         aria-label="Dismiss"
         style={{
-          background: 'none',
+          background: 'rgba(0,0,0,0.1)',
           border: 'none',
-          color: 'rgba(255,224,224,0.7)',
-          padding: 0,
+          color: '#000000',
+          padding: '0.5rem',
           marginLeft: '0.5rem',
           cursor: 'pointer',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'background 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(0,0,0,0.1)';
         }}
       >
-        <X size={18} />
+        <X size={16} />
       </button>
 
       {/* Dots Indicator */}
@@ -176,10 +192,10 @@ const AnnouncementBanner = () => {
                 height: currentIndex === index ? '10px' : '8px',
                 borderRadius: '50%',
                 backgroundColor:
-                  currentIndex === index ? '#ff6b6b' : 'rgba(255,255,255,0.3)',
+                  currentIndex === index ? '#4F46E5' : 'rgba(0,0,0,0.3)',
                 boxShadow:
                   currentIndex === index
-                    ? '0 0 8px rgba(255,107,107,0.7)'
+                    ? '0 0 8px rgba(79,70,229,0.5)'
                     : 'none',
                 transition: 'all 0.3s ease',
                 cursor: 'pointer',
@@ -192,38 +208,40 @@ const AnnouncementBanner = () => {
       {/* Keyframes for Glow & Waves */}
       <style>
         {`
-        @keyframes glow {
-          0%, 100% { filter: drop-shadow(0 0 4px rgba(255,107,107,0.8)); }
-          50% { filter: drop-shadow(0 0 10px rgba(255,107,107,1)); }
-        }
-
-        @keyframes wave {
+        @keyframes slideInRight {
           0% {
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0.6;
-          }
-          70% {
-            transform: translate(-50%, -50%) scale(1.6);
-            opacity: 0.2;
+            transform: translateX(100%);
+            opacity: 0;
           }
           100% {
-            transform: translate(-50%, -50%) scale(1.8);
-            opacity: 0;
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        @media (max-width: 1024px) {
+          .announcement-banner {
+            position: fixed !important;
+            top: 100px !important;
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
+            width: 90% !important;
+            max-width: 600px !important;
+            border-radius: 9999px !important;
+            padding: 0.5rem 1.25rem !important;
           }
         }
 
         @media (max-width: 768px) {
           .announcement-banner {
-            width: 95% !important;
-            margin: 0.75rem auto !important;
+            top: 90px !important;
           }
         }
 
         @media (max-width: 480px) {
           .announcement-banner {
-            width: 90% !important;
-            margin: 0.5rem auto !important;
-            padding: 0.65rem 0.85rem 1rem !important;
+            top: 85px !important;
           }
           
           .announcement-banner h6 {

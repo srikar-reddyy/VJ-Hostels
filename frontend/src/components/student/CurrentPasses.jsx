@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
-import { Download, Clock, Calendar, Phone, User, FileText } from 'lucide-react';
+import { Download, Clock, Calendar, Phone, User, FileText, MapPin } from 'lucide-react';
 import useCurrentUser from '../../hooks/student/useCurrentUser';
 import { generateOutpassPDF } from '../../utils/outpassPDF';
 import ErrorBoundary from './ErrorBoundary';
@@ -11,6 +11,15 @@ const CurrentPasses = () => {
     const [currentPasses, setCurrentPasses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const [regenerating, setRegenerating] = useState(null);
 
     useEffect(() => {
@@ -141,6 +150,151 @@ const CurrentPasses = () => {
         );
     }
 
+    // Mobile Metro Ticket Card
+    if (isMobile) {
+        return (
+            <ErrorBoundary>
+                <div style={mobileStyles.pageContainer}>
+                    <div style={mobileStyles.headerSection}>
+                        <h1 style={mobileStyles.mainTitle}>Current Active Passes</h1>
+                        <p style={mobileStyles.subtitle}>Your approved outpasses ready to use</p>
+                    </div>
+
+                    <div style={mobileStyles.cardsContainer}>
+                        {currentPasses.map((pass) => (
+                            <div key={pass._id} style={mobileStyles.ticketCard}>
+                                {/* Top Header with Gradient */}
+                                <div style={mobileStyles.ticketHeader}>
+                                    <div style={mobileStyles.headerContent}>
+                                        <div style={mobileStyles.headerLeft}>
+                                            <h3 style={mobileStyles.passengerName}>{pass.name}</h3>
+                                            <p style={mobileStyles.passType}>
+                                                {pass.type.charAt(0).toUpperCase() + pass.type.slice(1)} Pass
+                                            </p>
+                                        </div>
+                                        <span style={{
+                                            ...mobileStyles.statusBadge,
+                                            backgroundColor: pass.status === 'approved' ? '#10b981' : '#f59e0b',
+                                        }}>
+                                            {pass.status === 'approved' ? 'READY' : 'OUT'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* QR Code Section - Centered */}
+                                <div style={mobileStyles.qrSection}>
+                                    {pass.qrCodeData && (
+                                        <div style={mobileStyles.qrWrapper}>
+                                            <div style={mobileStyles.qrContainer}>
+                                                <QRCodeSVG 
+                                                    value={pass.qrCodeData} 
+                                                    size={180}
+                                                    level="H"
+                                                    includeMargin={true}
+                                                />
+                                            </div>
+                                            <p style={mobileStyles.qrInstruction}>Scan at Gate</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Dashed Separator */}
+                                <div style={mobileStyles.dashedSeparator}>
+                                    <div style={mobileStyles.leftNotch}></div>
+                                    <div style={mobileStyles.dashedLine}></div>
+                                    <div style={mobileStyles.rightNotch}></div>
+                                </div>
+
+                                {/* Details Section */}
+                                <div style={mobileStyles.detailsSection}>
+                                    {/* Two Column Grid for Student Info */}
+                                    <div style={mobileStyles.infoGrid}>
+                                        <div style={mobileStyles.infoItem}>
+                                            <FileText size={16} color="#667eea" />
+                                            <div>
+                                                <div style={mobileStyles.infoLabel}>Roll Number</div>
+                                                <div style={mobileStyles.infoValue}>{pass.rollNumber}</div>
+                                            </div>
+                                        </div>
+                                        <div style={mobileStyles.infoItem}>
+                                            <Phone size={16} color="#667eea" />
+                                            <div>
+                                                <div style={mobileStyles.infoLabel}>Parent's Phone</div>
+                                                <div style={mobileStyles.infoValue}>{pass.parentMobileNumber}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Time Details */}
+                                    <div style={mobileStyles.timeSection}>
+                                        <div style={mobileStyles.timeCard}>
+                                            <Calendar size={18} color="#10b981" />
+                                            <div style={mobileStyles.timeContent}>
+                                                <div style={mobileStyles.timeLabel}>Departure</div>
+                                                <div style={mobileStyles.timeValue}>
+                                                    {new Date(pass.outTime).toLocaleString('en-IN', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: true
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={mobileStyles.arrow}>→</div>
+                                        <div style={mobileStyles.timeCard}>
+                                            <Clock size={18} color="#ef4444" />
+                                            <div style={mobileStyles.timeContent}>
+                                                <div style={mobileStyles.timeLabel}>Return</div>
+                                                <div style={mobileStyles.timeValue}>
+                                                    {new Date(pass.inTime).toLocaleString('en-IN', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: true
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Reason Box */}
+                                    <div style={mobileStyles.reasonCard}>
+                                        <div style={mobileStyles.reasonHeader}>
+                                            <MapPin size={16} color="#667eea" />
+                                            <span style={mobileStyles.reasonLabel}>Purpose of Visit</span>
+                                        </div>
+                                        <p style={mobileStyles.reasonText}>{pass.reason}</p>
+                                    </div>
+
+                                    {/* Download Button */}
+                                    <button 
+                                        onClick={() => handleDownloadPDF(pass)}
+                                        style={mobileStyles.downloadButton}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#5a67d8';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#667eea';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <Download size={18} />
+                                        <span>Download Pass</span>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </ErrorBoundary>
+        );
+    }
+
+    // Desktop Original Layout
     return (
         <ErrorBoundary>
             <div style={styles.pageContainer}>
@@ -326,6 +480,7 @@ const CurrentPasses = () => {
     );
 };
 
+// Desktop styles (original)
 const styles = {
     pageContainer: {
         minHeight: '100vh',
@@ -534,6 +689,247 @@ const styles = {
         fontWeight: 'bold',
         marginBottom: '1rem',
         border: '2px solid #dc2626',
+    },
+};
+
+// Mobile styles (metro ticket design)
+const mobileStyles = {
+    pageContainer: {
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        borderRadius: '32px',
+        padding: '2rem 1rem',
+    },
+    headerSection: {
+        textAlign: 'center',
+        marginBottom: '2rem',
+        color: 'white',
+    },
+    mainTitle: {
+        fontSize: '1.75rem',
+        fontWeight: '700',
+        margin: '0 0 0.5rem 0',
+        textShadow: '0 2px 10px rgba(0,0,0,0.2)',
+    },
+    subtitle: {
+        fontSize: '0.95rem',
+        margin: 0,
+        opacity: 0.95,
+        fontWeight: '400',
+    },
+    cardsContainer: {
+        maxWidth: '500px',
+        margin: '0 auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.5rem',
+        padding: '0 0.5rem',
+    },
+    ticketCard: {
+        backgroundColor: '#fff',
+        borderRadius: '32px',
+        overflow: 'hidden',
+        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+        border: '2px solid rgba(16, 185, 129, 0.6)',
+    },
+    ticketHeader: {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '1.5rem',
+        color: 'white',
+    },
+    headerContent: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        gap: '1rem',
+    },
+    headerLeft: {
+        flex: 1,
+    },
+    passengerName: {
+        margin: 0,
+        fontSize: '1.35rem',
+        fontWeight: '700',
+        lineHeight: 1.2,
+    },
+    passType: {
+        margin: '0.25rem 0 0 0',
+        fontSize: '0.9rem',
+        opacity: 0.9,
+        fontWeight: '500',
+    },
+    statusBadge: {
+        padding: '6px 12px',
+        borderRadius: '20px',
+        fontSize: '0.7rem',
+        fontWeight: 'bold',
+        color: '#fff',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        whiteSpace: 'nowrap',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+    },
+    qrSection: {
+        padding: '2rem 1rem',
+        backgroundColor: '#fff',
+        display: 'flex',
+        justifyContent: 'center',
+    },
+    qrWrapper: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1rem',
+    },
+    qrContainer: {
+        padding: '1rem',
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        border: '2px solid #e2e8f0',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+    },
+    qrInstruction: {
+        margin: 0,
+        fontSize: '0.9rem',
+        color: '#64748b',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+    },
+    dashedSeparator: {
+        position: 'relative',
+        height: '20px',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    leftNotch: {
+        position: 'absolute',
+        left: '-10px',
+        width: '20px',
+        height: '20px',
+        backgroundColor: '#667eea',
+        borderRadius: '50%',
+    },
+    rightNotch: {
+        position: 'absolute',
+        right: '-10px',
+        width: '20px',
+        height: '20px',
+        backgroundColor: '#667eea',
+        borderRadius: '50%',
+    },
+    dashedLine: {
+        flex: 1,
+        borderTop: '2px dashed #cbd5e1',
+        margin: '0 10px',
+    },
+    detailsSection: {
+        padding: '1.5rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.25rem',
+    },
+    infoGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '1rem',
+    },
+    infoItem: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.5rem',
+    },
+    infoLabel: {
+        fontSize: '0.7rem',
+        color: '#64748b',
+        textTransform: 'uppercase',
+        fontWeight: '600',
+        letterSpacing: '0.5px',
+    },
+    infoValue: {
+        fontSize: '0.9rem',
+        color: '#1e293b',
+        fontWeight: '600',
+        marginTop: '0.15rem',
+    },
+    timeSection: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        padding: '1rem',
+        backgroundColor: '#f8fafc',
+        borderRadius: '12px',
+    },
+    timeCard: {
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+    },
+    timeContent: {
+        flex: 1,
+    },
+    timeLabel: {
+        fontSize: '0.7rem',
+        color: '#64748b',
+        textTransform: 'uppercase',
+        fontWeight: '600',
+        letterSpacing: '0.5px',
+    },
+    timeValue: {
+        fontSize: '0.85rem',
+        color: '#1e293b',
+        fontWeight: '600',
+        marginTop: '0.15rem',
+        lineHeight: 1.3,
+    },
+    arrow: {
+        fontSize: '1.5rem',
+        color: '#cbd5e1',
+        fontWeight: 'bold',
+    },
+    reasonCard: {
+        padding: '1rem',
+        backgroundColor: '#fef3c7',
+        borderLeft: '3px solid #f59e0b',
+        borderRadius: '8px',
+    },
+    reasonHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        marginBottom: '0.5rem',
+    },
+    reasonLabel: {
+        fontSize: '0.75rem',
+        color: '#92400e',
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+    },
+    reasonText: {
+        margin: 0,
+        fontSize: '0.9rem',
+        color: '#78350f',
+        lineHeight: '1.5',
+        fontWeight: '500',
+    },
+    downloadButton: {
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        padding: '14px 20px',
+        backgroundColor: '#667eea',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '12px',
+        fontSize: '0.95rem',
+        fontWeight: '600',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
     },
 };
 
