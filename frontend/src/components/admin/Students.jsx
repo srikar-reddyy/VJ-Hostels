@@ -28,6 +28,7 @@ const Students = () => {
         phoneNumber: '',
         email: '',
         parentMobileNumber: '',
+        parentName: '',
         roomNumber: '',
         password: ''
     });
@@ -121,8 +122,8 @@ const Students = () => {
         setFormSuccess('');
         setFormLoading(true);
 
-        try {
-            await axios.post(`${API_BASE_URL}/admin-api/student-register`,
+        try {   
+            await axios.post(`${import.meta.env.VITE_SERVER_URL}/admin-api/student-register`,
                 formData,
                 {
                     headers: {
@@ -139,6 +140,7 @@ const Students = () => {
                 phoneNumber: '',
                 email: '',
                 parentMobileNumber: '',
+                parentName: '',
                 roomNumber: '',
                 password: ''
             });
@@ -269,6 +271,18 @@ const Students = () => {
                                         id="parentMobileNumber"
                                         name="parentMobileNumber"
                                         value={formData.parentMobileNumber}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                                <div className="col-md-3">
+                                    <label htmlFor="parentName" className="form-label">Parent's Name</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="parentName"
+                                        name="parentName"
+                                        value={formData.parentName}
                                         onChange={handleInputChange}
                                         required
                                     />
