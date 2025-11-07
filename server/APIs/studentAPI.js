@@ -117,8 +117,20 @@ studentApp.get('/profile', verifyStudent, expressAsyncHandler(async (req, res) =
 // to read announcement
 studentApp.get('/all-announcements',expressAsyncHandler(async (req, res) => {
     try {
-        const announcements = await Announcement.find();
-        res.status(200).json(announcements);
+        const announcements = await Announcement.find().sort({ createdAt: -1 });
+        const mapped = announcements.map(a => {
+            const obj = a.toObject();
+            if (obj.image && obj.image.data) {
+                try {
+                    obj.imageUrl = `data:${obj.image.contentType};base64,${obj.image.data.toString('base64')}`;
+                } catch (e) {
+                    obj.imageUrl = null;
+                }
+                delete obj.image;
+            }
+            return obj;
+        });
+        res.status(200).json(mapped);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -129,16 +141,67 @@ studentApp.get('/announcements',expressAsyncHandler(async (req, res) => {
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
         const announcements = await Announcement.find({
             createdAt: { $gte: today }
+        }).sort({ createdAt: -1 });
+
+        const mapped = announcements.map(a => {
+            const obj = a.toObject();
+            if (obj.image && obj.image.data) {
+                try {
+                    obj.imageUrl = `data:${obj.image.contentType};base64,${obj.image.data.toString('base64')}`;
+                } catch (e) {
+                    obj.imageUrl = null;
+                }
+                delete obj.image;
+            }
+            return obj;
         });
 
-        res.status(200).json(announcements);
+        res.status(200).json(mapped);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }))
+
+// mark a single announcement as seen by the authenticated student
+studentApp.put('/announcement/:id/seen', verifyStudent, expressAsyncHandler(async (req, res) => {
+    try {
+        const { id } = req.params;
+        const announcement = await Announcement.findByIdAndUpdate(
+            id,
+            { $addToSet: { seen: req.studentId } },
+            { new: true }
+        );
+
+        if (!announcement) return res.status(404).json({ message: 'Announcement not found' });
+
+        return res.status(200).json({ success: true, seenCount: announcement.seen?.length || 0 });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
+
+// mark multiple announcements as seen (expects { ids: [id1, id2, ...] })
+studentApp.put('/announcements/mark-seen', verifyStudent, expressAsyncHandler(async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'ids array is required' });
+        }
+
+        await Announcement.updateMany(
+            { _id: { $in: ids } },
+            { $addToSet: { seen: req.studentId } }
+        );
+
+        const updated = await Announcement.find({ _id: { $in: ids } }).select('_id seen');
+        const counts = updated.map(a => ({ id: a._id, seenCount: a.seen.length }));
+        res.status(200).json({ success: true, counts });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
 
 // to post a general complaint
 studentApp.post('/post-complaint', uploadComplaintImage, expressAsyncHandler(async (req, res) => {

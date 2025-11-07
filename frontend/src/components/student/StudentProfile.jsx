@@ -215,68 +215,19 @@ function StudentProfile() {
         >
           Student Details
         </button>
-        <button
-          style={activeTab === 'profile' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton}
-          onClick={() => setActiveTab('profile')}
-        >
-          Profile Info
-        </button>
-        <button
-          style={activeTab === 'photo' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton}
-          onClick={() => setActiveTab('photo')}
-        >
-          Update Photo
-        </button>
-        <button
-          style={activeTab === 'password' ? {...styles.tabButton, ...styles.activeTab} : styles.tabButton}
-          onClick={() => setActiveTab('password')}
-        >
-          Change Password
-        </button>
       </div>
 
       {/* Student Details Tab */}
       {activeTab === 'details' && (
         <div style={styles.infoContainer}>
-          <h3 style={styles.subHeader}>Basic Details</h3>
           <p><strong>Name:</strong> {user?.name || 'N/A'}</p>
           <p><strong>Roll Number:</strong> {user?.rollNumber || 'N/A'}</p>
           <p><strong>Email:</strong> {user?.email || 'N/A'}</p>
-          <p><strong>Department:</strong> {user?.department || 'N/A'}</p>
+          <p><strong>Department:</strong> {user?.branch || 'N/A'}</p>
           <p><strong>Year:</strong> {user?.year || 'N/A'}</p>
-        </div>
-      )}
-
-      {/* Profile Info Tab */}
-      {activeTab === 'profile' && (
-        <div className="formContainer">
-          <form onSubmit={handleProfileUpdate}>
-            <div className="mb-3">
-              <label className="form-label">Student Phone Number</label>
-              <input
-                type="tel"
-                className="form-control"
-                name="phoneNumber"
-                value={profileData.phoneNumber}
-                onChange={handleProfileChange}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Parent Phone Number</label>
-              <input
-                type="tel"
-                className="form-control"
-                name="parentMobileNumber"
-                value={profileData.parentMobileNumber}
-                onChange={handleProfileChange}
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Update Profile
-            </button>
-          </form>
+          <p><strong>Phone Number:</strong> {user?.phoneNumber || 'N/A'}</p>
+          <p><strong>Parent's Mobile Number:</strong> {user?.parentMobileNumber || 'N/A'}</p>
+          <p><strong>Room:</strong> {user?.room || 'N/A'}</p>
         </div>
       )}
 
@@ -306,65 +257,6 @@ function StudentProfile() {
               disabled={photoLoading || !selectedFile}
             >
               {photoLoading ? 'Uploading...' : 'Upload Photo'}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Change Password Tab */}
-      {activeTab === 'password' && (
-        <div style={styles.formContainer}>
-          <h3 style={styles.subHeader}>Change Password</h3>
-
-          {passwordError && <p style={styles.errorText}>{passwordError}</p>}
-          {passwordSuccess && <p style={styles.successText}>{passwordSuccess}</p>}
-
-          <form onSubmit={handlePasswordSubmit}>
-            <div style={styles.formGroup}>
-              <label htmlFor="currentPassword" style={styles.label}>Current Password</label>
-              <input
-                type="password"
-                id="currentPassword"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label htmlFor="newPassword" style={styles.label}>New Password</label>
-              <input
-                type="password"
-                id="newPassword"
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordChange}
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label htmlFor="confirmPassword" style={styles.label}>Confirm New Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordChange}
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              style={styles.submitButton}
-              disabled={passwordLoading}
-            >
-              {passwordLoading ? 'Changing Password...' : 'Change Password'}
             </button>
           </form>
         </div>

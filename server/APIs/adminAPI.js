@@ -5,6 +5,7 @@ const Admin = require('../models/AdminModel');
 const Room = require('../models/Room');
 const expressAsyncHandler = require('express-async-handler');
 const Announcement = require('../models/AnnouncementModel');
+const { uploadAnnouncementImage } = require('../middleware/uploadMiddleware');
 const CommunityPost = require('../models/CommunityPostModel');
 const Complaint = require('../models/ComplaintModel');
 const Outpass = require('../models/OutpassModel');
@@ -262,17 +263,45 @@ adminApp.get('/student-details/:rollNumber', verifyAdmin, expressAsyncHandler(as
 
 
 // to post an announcement
-adminApp.post('/post-announcement', verifyAdmin, expressAsyncHandler(async (req, res) => {
+// post announcement with optional image (uploadAnnouncementImage uses memoryStorage)
+adminApp.post('/post-announcement', verifyAdmin, uploadAnnouncementImage, expressAsyncHandler(async (req, res) => {
     try {
-        const { title,description } = req.body;
+        const { title, description } = req.body;
 
         if (!title || !description) {
             return res.status(400).json({ message: 'Title and description are required' });
         }
 
-        const newAnnouncement = new Announcement({ title,description });
+        const announcementData = { title, description };
+
+        // If an image was uploaded, optionally compress then store buffer and contentType
+        if (req.file && req.file.buffer) {
+            let bufferToStore = req.file.buffer;
+            try {
+                const sharp = require('sharp');
+                // If image is larger than ~500KB, downscale/compress
+                if (bufferToStore.length > 500 * 1024) {
+                    bufferToStore = await sharp(bufferToStore)
+                        .rotate()
+                        .resize({ width: 1200, withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toBuffer();
+                }
+            } catch (e) {
+                // sharp not available or compression failed — fall back to original buffer
+                console.warn('Image compression skipped:', e.message || e);
+            }
+
+            announcementData.image = {
+                data: bufferToStore,
+                contentType: req.file.mimetype
+            };
+        }
+
+        const newAnnouncement = new Announcement(announcementData);
         await newAnnouncement.save();
 
+        // Return announcement with image metadata omitted for brevity
         res.status(201).json({ message: "Announcement posted successfully", announcement: newAnnouncement });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -280,14 +309,39 @@ adminApp.post('/post-announcement', verifyAdmin, expressAsyncHandler(async (req,
 }));
 
 // to edit announcement
-adminApp.put('/edit-announcement/:id', verifyAdmin, expressAsyncHandler(async (req, res) => {
+// edit announcement; allow updating description and optional image
+adminApp.put('/edit-announcement/:id', verifyAdmin, uploadAnnouncementImage, expressAsyncHandler(async (req, res) => {
     try {
         const { id } = req.params;
         const { description } = req.body;
 
+        const updateData = {};
+        if (description) updateData.description = description;
+
+        if (req.file && req.file.buffer) {
+            let bufferToStore = req.file.buffer;
+            try {
+                const sharp = require('sharp');
+                if (bufferToStore.length > 500 * 1024) {
+                    bufferToStore = await sharp(bufferToStore)
+                        .rotate()
+                        .resize({ width: 1200, withoutEnlargement: true })
+                        .jpeg({ quality: 80 })
+                        .toBuffer();
+                }
+            } catch (e) {
+                console.warn('Image compression skipped:', e.message || e);
+            }
+
+            updateData.image = {
+                data: bufferToStore,
+                contentType: req.file.mimetype
+            };
+        }
+
         const updatedAnnouncement = await Announcement.findByIdAndUpdate(
             id,
-            { description },
+            updateData,
             { new: true }
         );
 
@@ -301,12 +355,41 @@ adminApp.put('/edit-announcement/:id', verifyAdmin, expressAsyncHandler(async (r
     }
 }));
 
+// delete announcement
+adminApp.delete('/delete-announcement/:id', verifyAdmin, expressAsyncHandler(async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await Announcement.findByIdAndDelete(id);
+        if (!deleted) return res.status(404).json({ message: 'Announcement not found' });
+        res.status(200).json({ message: 'Announcement deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
+
 
 // to read announcement
 adminApp.get('/all-announcements', verifyAdmin, expressAsyncHandler(async (req, res) => {
     try {
-        const announcements = await Announcement.find();
-        res.status(200).json(announcements);
+        const announcements = await Announcement.find().sort({ createdAt: -1 });
+        // convert image buffer to data URI for transport if present
+        const mapped = announcements.map(a => {
+            const obj = a.toObject();
+            if (obj.image && obj.image.data) {
+                try {
+                    obj.imageUrl = `data:${obj.image.contentType};base64,${obj.image.data.toString('base64')}`;
+                } catch (e) {
+                    obj.imageUrl = null;
+                }
+                // Remove raw binary to reduce payload
+                delete obj.image;
+            }
+            // Add seenCount and avoid returning raw seen array to reduce payload
+            obj.seenCount = Array.isArray(obj.seen) ? obj.seen.length : 0;
+            delete obj.seen;
+            return obj;
+        });
+        res.status(200).json(mapped);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -317,12 +400,26 @@ adminApp.get('/announcements', verifyAdmin, expressAsyncHandler(async (req, res)
     try {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-
         const announcements = await Announcement.find({
             createdAt: { $gte: today }
+        }).sort({ createdAt: -1 });
+
+        const mapped = announcements.map(a => {
+            const obj = a.toObject();
+            if (obj.image && obj.image.data) {
+                try {
+                    obj.imageUrl = `data:${obj.image.contentType};base64,${obj.image.data.toString('base64')}`;
+                } catch (e) {
+                    obj.imageUrl = null;
+                }
+                delete obj.image;
+            }
+            obj.seenCount = Array.isArray(obj.seen) ? obj.seen.length : 0;
+            delete obj.seen;
+            return obj;
         });
 
-        res.status(200).json(announcements);
+        res.status(200).json(mapped);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
