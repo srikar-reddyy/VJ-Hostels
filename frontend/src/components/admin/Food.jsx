@@ -390,6 +390,8 @@ const Food = () => {
                 lunch: editFormData.lunch,
                 snacks: editFormData.snacks,
                 dinner: editFormData.dinner
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
             });
 
             if (response.data.success) {
