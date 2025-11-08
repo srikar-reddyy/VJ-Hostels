@@ -336,21 +336,25 @@ const Students = () => {
                                 </div>
                                 <div className="col-md-3">
                                     <label htmlFor="roomNumber" className="form-label">Room Number (Optional)</label>
-                                    <select
-                                        className="form-select"
+                                    <input
+                                        type="text"
+                                        className="form-control"
                                         id="roomNumber"
                                         name="roomNumber"
                                         value={formData.roomNumber}
                                         onChange={handleInputChange}
-                                    >
-                                        <option value="">Auto-allocate</option>
+                                        list="roomNumberList"
+                                        placeholder="Type or select room..."
+                                        autoComplete="off"
+                                    />
+                                    <datalist id="roomNumberList">
                                         {availableRooms.map(room => (
                                             <option key={room._id} value={room.roomNumber}>
                                                 Room {room.roomNumber} ({room.occupants.length}/{room.capacity} occupied)
                                             </option>
                                         ))}
-                                    </select>
-                                    <small className="form-text text-muted">Leave empty for auto-allocation</small>
+                                    </datalist>
+                                    <small className="form-text text-muted">Type room number or leave empty for auto-allocation</small>
                                 </div>
                                 <div className="col-md-3">
                                     <label htmlFor="password" className="form-label">Password</label>

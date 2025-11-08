@@ -192,8 +192,14 @@ const Rooms = () => {
         setSelectedStudent(student);
         setNewRoomNumber('');
 
-        // Get available rooms (rooms with space)
-        const vacantRooms = rooms.filter(room => room.occupants.length < room.capacity);
+        // Get available rooms (rooms with space) and sort them numerically
+        const vacantRooms = rooms
+            .filter(room => room.occupants.length < room.capacity)
+            .sort((a, b) => {
+                const numA = parseInt(a.roomNumber) || 0;
+                const numB = parseInt(b.roomNumber) || 0;
+                return numA - numB;
+            });
         setAvailableRooms(vacantRooms);
 
         setShowChangeRoomModal(true);
@@ -324,17 +330,6 @@ const Rooms = () => {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Room Management</h2>
                 <div className="d-flex gap-2">
-                    {/* 
-                    AUTOMATIC SYNCING IS NOW ENABLED
-                    Manual sync button hidden - rooms sync automatically when:
-                    - Student is registered
-                    - Student is deactivated
-                    - Room is changed
-                    - Student details are updated
-                    
-                    Uncomment below button only for emergency/troubleshooting:
-                    */}
-
                     <button
                         className="btn btn-warning text-nowrap"
                         onClick={handleAllocateRooms}
@@ -779,20 +774,25 @@ const Rooms = () => {
 
                                         <div className="form-group mt-4">
                                             <label htmlFor="newRoom" className="form-label">Select New Room</label>
-                                            <select
+                                            <input
+                                                type="text"
                                                 id="newRoom"
-                                                className="form-select"
+                                                className="form-control"
                                                 value={newRoomNumber}
                                                 onChange={(e) => setNewRoomNumber(e.target.value)}
+                                                list="changeRoomNumberList"
+                                                placeholder="Type room number to search..."
+                                                autoComplete="off"
                                                 disabled={changingRoom}
-                                            >
-                                                <option value="">-- Select a Room --</option>
+                                            />
+                                            <datalist id="changeRoomNumberList">
                                                 {availableRooms.map(room => (
                                                     <option key={room._id} value={room.roomNumber}>
                                                         Room {room.roomNumber} ({room.occupants.length}/{room.capacity} occupied)
                                                     </option>
                                                 ))}
-                                            </select>
+                                            </datalist>
+                                            <small className="form-text text-muted">Type to search available rooms</small>
                                         </div>
                                     </div>
                                 )}

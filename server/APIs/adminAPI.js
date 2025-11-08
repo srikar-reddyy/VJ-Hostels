@@ -748,20 +748,19 @@ adminApp.put('/unassign-student-room', verifyAdmin, expressAsyncHandler(async (r
         const currentRoom = await Room.findOne({ roomNumber: student.room });
 
         // If student doesn't have a room assigned
-        if (!currentRoom) {
+        if (!student.room) {
             return res.status(400).json({ message: "Student doesn't have a room assigned" });
         }
 
-        // Update the room (remove student from occupants)
-        currentRoom.occupants = currentRoom.occupants.filter(occupantId =>
-            occupantId.toString() !== student._id.toString()
-        );
-        await currentRoom.save();
+        // Store old room number for syncing
+        const oldRoomNumber = student.room;
 
         // Update the student's room number to empty
-        const oldRoomNumber = student.room;
         student.room = "";
         await student.save();
+
+        // Auto-sync the old room to update occupants
+        await roomSyncService.syncSingleRoom(oldRoomNumber);
 
         res.status(200).json({
             message: `Student ${student.name} unassigned from room ${oldRoomNumber}`,
@@ -794,7 +793,7 @@ adminApp.put('/exchange-student-rooms', verifyAdmin, expressAsyncHandler(async (
             return res.status(400).json({ message: "Both students must have rooms assigned" });
         }
 
-        // Get the rooms
+        // Get the rooms for validation
         const room1 = await Room.findOne({ roomNumber: student1.room });
         const room2 = await Room.findOne({ roomNumber: student2.room });
 
@@ -802,24 +801,21 @@ adminApp.put('/exchange-student-rooms', verifyAdmin, expressAsyncHandler(async (
             return res.status(404).json({ message: "One or both rooms not found" });
         }
 
-        // Remove students from their current rooms
-        room1.occupants = room1.occupants.filter(id => id.toString() !== student1._id.toString());
-        room2.occupants = room2.occupants.filter(id => id.toString() !== student2._id.toString());
-
-        // Add students to their new rooms
-        room1.occupants.push(student2._id);
-        room2.occupants.push(student1._id);
+        // Store room numbers for syncing
+        const room1Number = student1.room;
+        const room2Number = student2.room;
 
         // Swap room numbers for students
-        const tempRoomNumber = student1.room;
-        student1.room = student2.room;
-        student2.room = tempRoomNumber;
+        student1.room = room2Number;
+        student2.room = room1Number;
 
-        // Save all changes
-        await room1.save();
-        await room2.save();
+        // Save student changes
         await student1.save();
         await student2.save();
+
+        // Auto-sync both rooms to update occupants
+        await roomSyncService.syncSingleRoom(room1Number);
+        await roomSyncService.syncSingleRoom(room2Number);
 
         res.status(200).json({
             message: `Successfully exchanged rooms: ${student1.name} moved to ${student1.room} and ${student2.name} moved to ${student2.room}`,
@@ -863,6 +859,7 @@ adminApp.post('/allocate-rooms', verifyAdmin, expressAsyncHandler(async (req, re
 
         let allocatedCount = 0;
         let roomIndex = 0;
+        const affectedRooms = new Set(); // Track rooms that need syncing
 
         // Allocate students to rooms
         for (const student of studentsToAllocate) {
@@ -876,10 +873,7 @@ adminApp.post('/allocate-rooms', verifyAdmin, expressAsyncHandler(async (req, re
                     student.room = room.roomNumber;
                     await student.save();
 
-                    // Add student to room's occupants
-                    room.occupants.push(student._id);
-                    await room.save();
-
+                    affectedRooms.add(room.roomNumber); // Track for syncing
                     allocatedCount++;
                     break;
                 }
@@ -901,6 +895,16 @@ adminApp.post('/allocate-rooms', verifyAdmin, expressAsyncHandler(async (req, re
                     const updatedVacantRooms = [...updatedPartiallyFilledRooms, ...updatedEmptyRooms];
 
                     if (updatedVacantRooms.length === 0) {
+                        // ✅ AUTOMATIC SYNC: Sync all affected rooms before returning
+                        try {
+                            await Promise.all(Array.from(affectedRooms).map(roomNum => 
+                                roomSyncService.syncSingleRoom(roomNum)
+                            ));
+                            console.log(`✅ Auto-synced ${affectedRooms.size} rooms after allocation`);
+                        } catch (syncError) {
+                            console.error('⚠️  Room sync warning after allocation:', syncError);
+                        }
+
                         return res.status(200).json({
                             message: `Allocated ${allocatedCount} students to rooms. No more vacant rooms available.`,
                             allocatedCount
@@ -911,6 +915,16 @@ adminApp.post('/allocate-rooms', verifyAdmin, expressAsyncHandler(async (req, re
                     vacantRooms.push(...updatedVacantRooms);
                 }
             }
+        }
+
+        // ✅ AUTOMATIC SYNC: Sync all affected rooms after allocation
+        try {
+            await Promise.all(Array.from(affectedRooms).map(roomNum => 
+                roomSyncService.syncSingleRoom(roomNum)
+            ));
+            console.log(`✅ Auto-synced ${affectedRooms.size} rooms after student allocation`);
+        } catch (syncError) {
+            console.error('⚠️  Room sync warning after allocation:', syncError);
         }
 
         res.status(200).json({
@@ -1198,10 +1212,6 @@ adminApp.post('/generate-students', verifyAdmin, expressAsyncHandler(async (req,
                         student.room = room.roomNumber;
                         await student.save();
 
-                        // Add student to room's occupants
-                        room.occupants.push(student._id);
-                        await room.save();
-
                         studentIndex++;
                         allocatedCount++;
                     }
@@ -1224,10 +1234,6 @@ adminApp.post('/generate-students', verifyAdmin, expressAsyncHandler(async (req,
                     // Update student's room number
                     student.room = room.roomNumber;
                     await student.save();
-
-                    // Add student to room's occupants
-                    room.occupants.push(student._id);
-                    await room.save();
 
                     allocatedCount++;
 
@@ -1258,14 +1264,19 @@ adminApp.post('/generate-students', verifyAdmin, expressAsyncHandler(async (req,
                     student.room = currentRoom.roomNumber;
                     await student.save();
 
-                    // Add student to room's occupants
-                    currentRoom.occupants.push(student._id);
-                    await currentRoom.save();
-
                     studentsInCurrentRoom++;
                     allocatedCount++;
                 }
             }
+        }
+
+        // ✅ AUTOMATIC SYNC: Sync all rooms after bulk student generation
+        try {
+            console.log('🔄 Syncing all rooms after bulk student generation...');
+            const syncResult = await roomSyncService.syncStudentsToRooms();
+            console.log(`✅ Full room sync completed: ${syncResult.roomsUpdated} rooms updated`);
+        } catch (syncError) {
+            console.error('⚠️  Room sync warning after generation:', syncError);
         }
 
         res.status(201).json({
