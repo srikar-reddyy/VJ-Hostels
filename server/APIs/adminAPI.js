@@ -228,7 +228,8 @@ adminApp.put('/student-delete', verifyAdmin, expressAsyncHandler(async (req, res
 // to get all active students
 adminApp.get('/get-active-students', verifyAdmin, expressAsyncHandler(async (req, res) => {
     try {
-        const activeStudents = await Student.find({ is_active: true });
+        const activeStudents = await Student.find({ is_active: true })
+            .sort({ room: 1, rollNumber: 1 }); // Sort by room number, then by roll number
         res.status(200).json(activeStudents);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -238,8 +239,9 @@ adminApp.get('/get-active-students', verifyAdmin, expressAsyncHandler(async (req
 // to get all inactive students
 adminApp.get('/get-inactive-students', verifyAdmin, expressAsyncHandler(async (req, res) => {
     try {
-        const activeStudents = await Student.find({ is_active: false });
-        res.status(200).json(activeStudents);
+        const inactiveStudents = await Student.find({ is_active: false })
+            .sort({ room: 1, rollNumber: 1 }); // Sort by room number, then by roll number
+        res.status(200).json(inactiveStudents);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -548,7 +550,9 @@ adminApp.get('/pending-outpasses', verifyAdmin, expressAsyncHandler(async (req, 
 // Get all rooms with occupancy details
 adminApp.get('/rooms', verifyAdmin, expressAsyncHandler(async (req, res) => {
     try {
-        const rooms = await Room.find().populate('occupants', 'name rollNumber branch year');
+        const rooms = await Room.find()
+            .populate('occupants', 'name rollNumber branch year')
+            .sort({ roomNumber: 1 }); // Sort by room number
         res.status(200).json(rooms);
     } catch (error) {
         res.status(500).json({ error: error.message });
