@@ -292,9 +292,66 @@ async function getRoomStatistics() {
     }
 }
 
+/**
+ * Sync a single room with its current students (for automatic syncing)
+ * This is much faster than syncing all rooms and should be used after individual operations
+ */
+async function syncSingleRoom(roomNumber) {
+    try {
+        if (!roomNumber || roomNumber === '') {
+            console.warn('⚠️  No room number provided for single room sync');
+            return { success: false, message: 'No room number provided' };
+        }
+
+        console.log(`🔄 Syncing single room: ${roomNumber}`);
+
+        // Find all active students assigned to this room
+        const students = await Student.find({
+            room: roomNumber,
+            is_active: true
+        }).select('_id rollNumber name');
+
+        // Find or create the room
+        let room = await Room.findOne({ roomNumber });
+        
+        if (!room) {
+            // Create room if it doesn't exist
+            const floor = extractFloorNumber(roomNumber);
+            room = new Room({
+                roomNumber,
+                floor,
+                capacity: 3,
+                occupants: [],
+                allocatedStudents: []
+            });
+            console.log(`✨ Created new room ${roomNumber} during sync`);
+        }
+
+        // Update room with current students
+        const studentIds = students.map(s => s._id);
+        room.occupants = studentIds;
+        room.allocatedStudents = studentIds;
+        
+        await room.save();
+        
+        console.log(`✅ Room ${roomNumber} synced: ${studentIds.length} students`);
+        
+        return {
+            success: true,
+            roomNumber,
+            studentCount: studentIds.length,
+            students: students.map(s => ({ id: s._id, rollNumber: s.rollNumber, name: s.name }))
+        };
+    } catch (error) {
+        console.error(`❌ Error syncing room ${roomNumber}:`, error);
+        throw error;
+    }
+}
+
 module.exports = {
     generateAllRooms,
     syncStudentsToRooms,
+    syncSingleRoom,  // NEW: For automatic syncing after individual operations
     getAllRoomsWithStudents,
     getRoomsByFloor,
     getRoomStatistics,
