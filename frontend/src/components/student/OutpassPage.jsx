@@ -105,67 +105,135 @@ const OutpassPage = () => {
                             </div>
                         ) : (
                             // Desktop Tabs
-                            <>
-                                <div
-                                    className={`outpass-tab ${activeTab === 'outpass' ? 'active' : ''}`}
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                gap: '0.5rem',
+                                background: 'white',
+                                padding: '0.5rem',
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                                maxWidth: '600px',
+                                margin: '0 auto',
+                                width: '100%'
+                            }}>
+                                <button
+                                    type="button"
                                     onClick={() => setActiveTab('outpass')}
                                     style={{
                                         display: 'flex',
+                                        flexDirection: 'column',
                                         alignItems: 'center',
+                                        justifyContent: 'center',
                                         gap: '0.5rem',
+                                        padding: '0.75rem 0.5rem',
+                                        border: activeTab === 'outpass' ? 'none' : '1px solid #e2e8f0',
+                                        background: activeTab === 'outpass' ? '#667eea' : 'white',
+                                        color: activeTab === 'outpass' ? 'white' : '#64748b',
+                                        fontWeight: '600',
+                                        fontSize: '0.75rem',
+                                        borderRadius: '10px',
                                         cursor: 'pointer',
-                                        padding: '0.6rem 1rem',
-                                        borderRadius: '8px',
-                                        backgroundColor:
-                                            activeTab === 'outpass' ? '#007bff' : '#f0f0f0',
-                                        color: activeTab === 'outpass' ? '#fff' : '#333',
-                                        transition: 'all 0.3s ease',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: activeTab === 'outpass' ? '0 4px 12px rgba(102, 126, 234, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.05)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (activeTab !== 'outpass') {
+                                            e.currentTarget.style.background = '#f8fafc';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (activeTab !== 'outpass') {
+                                            e.currentTarget.style.background = 'white';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                                        }
                                     }}
                                 >
                                     <CalendarDays size={20} />
-                                    <span>Apply For OutPass</span>
-                                </div>
+                                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Apply</span>
+                                </button>
 
-                                <div
-                                    className={`outpass-tab ${activeTab === 'currentPasses' ? 'active' : ''}`}
+                                <button
+                                    type="button"
                                     onClick={() => setActiveTab('currentPasses')}
                                     style={{
                                         display: 'flex',
+                                        flexDirection: 'column',
                                         alignItems: 'center',
+                                        justifyContent: 'center',
                                         gap: '0.5rem',
+                                        padding: '0.75rem 0.5rem',
+                                        border: activeTab === 'currentPasses' ? 'none' : '1px solid #e2e8f0',
+                                        background: activeTab === 'currentPasses' ? '#667eea' : 'white',
+                                        color: activeTab === 'currentPasses' ? 'white' : '#64748b',
+                                        fontWeight: '600',
+                                        fontSize: '0.75rem',
+                                        borderRadius: '10px',
                                         cursor: 'pointer',
-                                        padding: '0.6rem 1rem',
-                                        borderRadius: '8px',
-                                        backgroundColor:
-                                            activeTab === 'currentPasses' ? '#007bff' : '#f0f0f0',
-                                        color: activeTab === 'currentPasses' ? '#fff' : '#333',
-                                        transition: 'all 0.3s ease',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: activeTab === 'currentPasses' ? '0 4px 12px rgba(102, 126, 234, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.05)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (activeTab !== 'currentPasses') {
+                                            e.currentTarget.style.background = '#f8fafc';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (activeTab !== 'currentPasses') {
+                                            e.currentTarget.style.background = 'white';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                                        }
                                     }}
                                 >
                                     <CheckCircle size={20} />
-                                    <span>Current Passes</span>
-                                </div>
+                                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Current</span>
+                                </button>
 
-                                <div
-                                    className={`outpass-tab ${activeTab === 'outpassList' ? 'active' : ''}`}
+                                <button
+                                    type="button"
                                     onClick={() => setActiveTab('outpassList')}
                                     style={{
                                         display: 'flex',
+                                        flexDirection: 'column',
                                         alignItems: 'center',
+                                        justifyContent: 'center',
                                         gap: '0.5rem',
+                                        padding: '0.75rem 0.5rem',
+                                        border: activeTab === 'outpassList' ? 'none' : '1px solid #e2e8f0',
+                                        background: activeTab === 'outpassList' ? '#667eea' : 'white',
+                                        color: activeTab === 'outpassList' ? 'white' : '#64748b',
+                                        fontWeight: '600',
+                                        fontSize: '0.75rem',
+                                        borderRadius: '10px',
                                         cursor: 'pointer',
-                                        padding: '0.6rem 1rem',
-                                        borderRadius: '8px',
-                                        backgroundColor:
-                                            activeTab === 'outpassList' ? '#007bff' : '#f0f0f0',
-                                        color: activeTab === 'outpassList' ? '#fff' : '#333',
-                                        transition: 'all 0.3s ease',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: activeTab === 'outpassList' ? '0 4px 12px rgba(102, 126, 234, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.05)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (activeTab !== 'outpassList') {
+                                            e.currentTarget.style.background = '#f8fafc';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (activeTab !== 'outpassList') {
+                                            e.currentTarget.style.background = 'white';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                                        }
                                     }}
                                 >
                                     <ArrowRight size={20} />
-                                    <span>OutPass History</span>
-                                </div>
-                            </>
+                                    <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>History</span>
+                                </button>
+                            </div>
                         )}
                     </div>
 

@@ -184,6 +184,7 @@ function StudentLayout() {
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
               zIndex: 1000,
               transform: sidebarOpen ? 'translateX(0)' : 'translateX(-120%)',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               overflow: 'hidden',
               borderRadius: '24px',
               border: '1px solid rgba(255, 255, 255, 0.1)',
