@@ -315,6 +315,7 @@ const VisitorManagement = () => {
           }}>
             <button
               type="button"
+              onClick={() => setCurrentView('generate')}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -332,7 +333,6 @@ const VisitorManagement = () => {
                 transition: 'all 0.2s ease',
                 boxShadow: currentView === 'generate' ? '0 4px 12px rgba(102, 126, 234, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.05)'
               }}
-              onClick={() => setCurrentView('generate')}
               onMouseEnter={(e) => {
                 if (currentView !== 'generate') {
                   e.currentTarget.style.background = '#f8fafc';
@@ -351,8 +351,10 @@ const VisitorManagement = () => {
               <Plus size={20} />
               <span style={{ fontSize: '0.75rem', textAlign: 'center' }}>Generate</span>
             </button>
+
             <button
               type="button"
+              onClick={() => setCurrentView('active')}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -370,7 +372,6 @@ const VisitorManagement = () => {
                 transition: 'all 0.2s ease',
                 boxShadow: currentView === 'active' ? '0 4px 12px rgba(102, 126, 234, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.05)'
               }}
-              onClick={() => setCurrentView('active')}
               onMouseEnter={(e) => {
                 if (currentView !== 'active') {
                   e.currentTarget.style.background = '#f8fafc';
@@ -392,6 +393,7 @@ const VisitorManagement = () => {
 
             <button
               type="button"
+              onClick={() => setCurrentView('history')}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -409,7 +411,6 @@ const VisitorManagement = () => {
                 transition: 'all 0.2s ease',
                 boxShadow: currentView === 'history' ? '0 4px 12px rgba(102, 126, 234, 0.4)' : '0 2px 4px rgba(0, 0, 0, 0.05)'
               }}
-              onClick={() => setCurrentView('history')}
               onMouseEnter={(e) => {
                 if (currentView !== 'history') {
                   e.currentTarget.style.background = '#f8fafc';
